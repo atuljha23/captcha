@@ -81,7 +81,7 @@ def patch_wave_header(body):
     return data
 
 
-def create_noise(length, level=4):
+'''def create_noise(length, level=4):
     """Create white noise for background"""
     noise = bytearray(length)
     adjust = 128 - int(level / 2)
@@ -90,7 +90,7 @@ def create_noise(length, level=4):
         v = random.randint(0, 256)
         noise[i] = v % level + adjust
         i += 1
-    return noise
+    return noise '''
 
 
 def create_silence(length):
@@ -136,9 +136,9 @@ def mix_wave(src, dst):
     return dst
 
 
-BEEP = _read_wave_file(os.path.join(DATA_DIR, 'beep.wav'))
-END_BEEP = change_speed(BEEP, 1.4)
-SILENCE = create_silence(int(WAVE_SAMPLE_RATE / 5))
+
+
+SILENCE = create_silence(int(WAVE_SAMPLE_RATE / 2))
 
 
 class AudioCaptcha(object):
@@ -184,7 +184,7 @@ class AudioCaptcha(object):
                 self._choices.append(n)
         return self._choices
 
-    def random(self, length=6):
+    def random(self, length=8):
         """Generate a random string with the given length.
 
         :param length: the return string length.
@@ -217,11 +217,6 @@ class AudioCaptcha(object):
         voice = change_sound(voice, level)
         return voice
 
-    def _noise_pick(self):
-        key = random.choice(self.choices)
-        voice = random.choice(self._cache[key])
-        voice = copy.copy(voice)
-        voice.reverse()
 
         speed = random.randrange(8, 16) / 10.0
         voice = change_speed(voice, speed)
@@ -229,16 +224,6 @@ class AudioCaptcha(object):
         level = random.randrange(2, 6) / 10.0
         voice = change_sound(voice, level)
         return voice
-
-    def create_background_noise(self, length, chars):
-        noise = create_noise(length, 4)
-        pos = 0
-        while pos < length:
-            sound = self._noise_pick()
-            end = pos + len(sound) + 1
-            noise[pos:end] = mix_wave(sound, noise[pos:end])
-            pos = end + random.randint(0, int(WAVE_SAMPLE_RATE / 10))
-        return noise
 
     def create_wave_body(self, chars):
         voices = []
